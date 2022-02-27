@@ -1,4 +1,5 @@
 import time
+import numpy as np
 
 """
 Replace following with your own algorithm logic
@@ -8,6 +9,8 @@ Manual mode where you can use your mouse as also been added for testing purposes
 """
 def GetLocation(move_type, env, current_frame):
     time.sleep(1) #artificial one second processing time
+
+    move_type = "absolute"
     
     #Use relative coordinates to the current position of the "gun", defined as an integer below
     if move_type == "relative":
@@ -22,7 +25,8 @@ def GetLocation(move_type, env, current_frame):
         North-West = 7
         NOOP = 8
         """
-        coordinate = env.action_space.sample() 
+        #coordinate = env.action_space.sample()
+        coordinate = 3
     #Use absolute coordinates for the position of the "gun", coordinate space are defined below
     else:
         """
@@ -30,7 +34,12 @@ def GetLocation(move_type, env, current_frame):
         Upper left = (0,0)
         Bottom right = (W, H) 
         """
-        coordinate = env.action_space_abs.sample()
+        #Find bird shaped object in current frame
+        coordinate = (np.random.randint(0, env.width-1), np.random.randint(0, env.height-1))
+
+
+        print("coordinate: ", coordinate)
+        
     
     return [{'coordinate' : coordinate, 'move_type' : move_type}]
 
