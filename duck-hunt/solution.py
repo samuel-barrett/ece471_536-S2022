@@ -58,6 +58,28 @@ def FindMatch(duck_num, current_frame):
     
     return {'duck_num': len(locs), 'loc': (int(median[1]), int(median[0])), 'duck':duck_num}
 
+def FindMatchSurf(duck_num, current_frame):
+    """
+    Use surf to find the best match for the duck
+    """
+
+    current_frame = current_frame.astype(np.uint8)
+    surf = cv2.SURF(400)
+    kp1, des1 = surf.detectAndCompute(ducks[duck_num-1], None)
+    kp2, des2 = surf.detectAndCompute(current_frame, None)
+    bf = cv2.BFMatcher()
+    matches = bf.knnMatch(des1, des2, k=2)
+
+    #Get location of best match
+    good = np.array([m for (m,n) in matches if m.distance < np.random.uniform(0.7, 0.85)*n.distance])
+
+    if len(good) == 0:
+        return {'duck_num':0, 'loc':(0,0), 'duck':duck_num}
+
+    locs = np.array([kp2[m.trainIdx].pt for m in good])
+    median = np.median(locs, axis=0)
+    return {'duck_num': len(locs), 'loc': (int(median[1]), int(median[0])), 'duck':duck_num}
+
 duck_choice = 0
 def GetLocation(move_type, env, current_frame):
     global num_ducks, duck_choice
