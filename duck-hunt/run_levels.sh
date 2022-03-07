@@ -4,10 +4,13 @@
 # Do avoid this (or to run a specific set of levels) you can 
 # use a script to run each level in a loop
 
-duration=60
+duration=4
+
 for x in `seq 10 819`; do 
     #Run level $x
-    python3 duck_hunt_main.py -l $x -d $duration; 
+    #Collect the output in a variable
+    python3 duck_hunt_main.py -d $duration -l $x
+
     #Get error code
     rc=$?; 
     if [ $rc -ne 0 ]; then
