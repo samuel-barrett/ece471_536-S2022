@@ -1,15 +1,16 @@
 from random import random
+from cv2 import IMREAD_GRAYSCALE
 import numpy as np
 import cv2
 import os
 
 def GetDuck(duck_num):
     duck_path = os.path.dirname(__file__) + "/match_images"
-    duck = cv2.imread(duck_path + "/duck" + str(duck_num) + ".jpg")
+    duck = cv2.imread(duck_path + "/duck" + str(duck_num) + ".jpg", cv2.IMREAD_GRAYSCALE)
     if duck is None:
         raise Exception("Error: duck image not found: {}".format(duck_path + "/duck" + str(duck_num) + ".jpg"))
-    duck = cv2.normalize(duck, None, 0, 255, cv2.NORM_MINMAX)
     duck = duck.astype(np.uint8)
+    duck = cv2.normalize(duck, None, 0, 255, cv2.NORM_MINMAX)
     return duck
 
 num_ducks = 7
@@ -35,50 +36,34 @@ def FindMatch(duck_num, current_frame):
     """
     global des1s, sift, bf, kp1s, counter, ducks
     #Convert duck and current_frame to uint8
+    current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
     current_frame = current_frame.astype(np.uint8)
+    current_frame = cv2.normalize(current_frame, None, 0, 255, cv2.NORM_MINMAX)
 
     des1 = des1s[duck_num-1]
     kp2, des2 = sift.detectAndCompute(current_frame, None)
+
+
     matches = bf.knnMatch(des1, des2, k=2)
 
-    #Get location of best match
-    good = np.array([m for (m,n) in matches if m.distance < np.random.uniform(0.7, 0.85)*n.distance])
+    good = []
+    for m, n in matches:
+        if m.distance < 0.7 * n.distance:
+            good.append(m)
 
-    #Show image with matches to file
-    img = cv2.drawMatches(ducks[duck_num-1], kp1s[duck_num-1], current_frame, kp2, good, None, flags=2)
-    cv2.imwrite("match/match" + str(counter) + ".jpg", img)
-    counter += 1
+    #Make good one list
+    #good = sorted(good, key=lambda x: x.distance)[:10]
 
-    if len(good) == 0:
-        return {'duck_num':0, 'loc':(0,0), 'duck':duck_num}
-
-    locs = np.array([kp2[m.trainIdx].pt for m in good])
-
-    median = np.median(locs, axis=0)
     
-    return {'duck_num': len(locs), 'loc': (int(median[1]), int(median[0])), 'duck':duck_num}
-
-def FindMatchSurf(duck_num, current_frame):
-    """
-    Use surf to find the best match for the duck
-    """
-
-    current_frame = current_frame.astype(np.uint8)
-    surf = cv2.SURF(400)
-    kp1, des1 = surf.detectAndCompute(ducks[duck_num-1], None)
-    kp2, des2 = surf.detectAndCompute(current_frame, None)
-    bf = cv2.BFMatcher()
-    matches = bf.knnMatch(des1, des2, k=2)
-
-    #Get location of best match
-    good = np.array([m for (m,n) in matches if m.distance < np.random.uniform(0.7, 0.85)*n.distance])
-
     if len(good) == 0:
-        return {'duck_num':0, 'loc':(0,0), 'duck':duck_num}
+        return {'duck_num': 0, 'loc': (0,0), 'duck': ducks[0]}
+    
+    #Get median point
+    median = kp2[good[len(good)//2].trainIdx].pt
 
-    locs = np.array([kp2[m.trainIdx].pt for m in good])
-    median = np.median(locs, axis=0)
-    return {'duck_num': len(locs), 'loc': (int(median[1]), int(median[0])), 'duck':duck_num}
+    
+    return {'duck_num': len(good), 'loc': (median[1], median[0]), 'duck': ducks[0]}
+
 
 duck_choice = 0
 def GetLocation(move_type, env, current_frame):
