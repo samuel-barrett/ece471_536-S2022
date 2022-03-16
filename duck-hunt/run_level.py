@@ -1,6 +1,8 @@
 #Run duckhunt levels
 import re
 import subprocess
+import argparse
+import sys
 
 def run_level(level, duration):
     #Run level and get output of run
@@ -19,12 +21,10 @@ def run_level(level, duration):
 
     return {'hits': hits, 'total_ducks': total_ducks, 'score': score, 'ratio': ratio}
 
-def main():
-    levels = (1, 200)
-    duration = 60
+def main(levels, duration):
 
     #Open file to write results
-    f = open("results.csv", "w")
+    f = open("results.csv", "a")
 
     #Write header
     f.write("level, duration, hits, total_ducks, score, ratio\n")
@@ -46,4 +46,10 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Run duckhunt levels')
+    parser.add_argument('-l', '--levels', nargs=2, type=int, help='Range of levels to run')
+    parser.add_argument('-d', '--duration', type=int, help='Duration of each level')
+    args = parser.parse_args()
+    levels = (args.levels[0], args.levels[1])
+    duration = args.duration
+    main(levels, duration)

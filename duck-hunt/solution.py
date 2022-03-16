@@ -1,5 +1,7 @@
 import cv2
 import os
+import numpy as np
+#
 
 num_ducks = 7
 
@@ -24,35 +26,22 @@ def GlobalInit():
         kp1, des1 = sift.detectAndCompute(duck, None)
         des1s.append(des1)
         kp1s.append(kp1)
-    bf = cv2.BFMatcher()
+    bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=False)
     return sift, bf, des1s, kp1s
 
 sift, bf, des1s, kp1s = GlobalInit()
-
-def FindMatch(duck_choice, current_frame):
-    """
-    Use sift to find the best match for the duck
-    """
-    global des1s, sift, bf, kp1s
-
-    kp2, des2 = sift.detectAndCompute(current_frame, None)
-    matches = bf.knnMatch(des1s[duck_choice-1], des2, k=2)
-
-    if len(matches) == 0:
-        return (0,0)
-
-    #Get match with lowest match[0].distance/match[1].distance
-    y1, x1 = kp2[min(matches, key=lambda x: x[0].distance / x[1].distance)[0].trainIdx].pt
-    
-    return (x1, y1)
 
 
 duck_choice = 0
 def GetLocation(move_type, env, current_frame):
     global num_ducks, duck_choice
+    global des1s, sift, bf, kp1s
     duck_choice = (duck_choice + 1) % num_ducks
-    return [{'coordinate' : FindMatch(duck_choice, current_frame), 'move_type' : "absolute"}]
-    
 
+    kp2, des2 = sift.detectAndCompute(current_frame, None)
+    matches = bf.knnMatch(des1s[duck_choice], des2, k=2)
 
+    y,x = kp2[min(matches, key=lambda x: x[0].distance/x[1].distance)[0].trainIdx].pt
+
+    return [{'coordinate':(x,y), 'move_type' : "absolute"}]
 
