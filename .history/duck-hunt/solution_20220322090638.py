@@ -82,10 +82,10 @@ duck_hunt = DuckHunt(7)
 
 def GetLocation(move_type, env, current_frame):
     global duck_hunt
-    if np.random.uniform() < 0.5:
-        return [{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
-    else:
-        return [{'coordinate': duck_hunt.template_match(current_frame), 'move_type': 'absolute'}]
+    #if np.random.uniform() < 0.5:
+    #    return [{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
+    #else:
+    #    return [{'coordinate': duck_hunt.template_match(current_frame), 'move_type': 'absolute'}]
     
     return[{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
 

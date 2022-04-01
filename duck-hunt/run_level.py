@@ -28,10 +28,13 @@ def main(levels, duration):
 
     #Write header
     f.write("level, duration, hits, total_ducks, score, ratio\n")
+    f.close()
+    
     for level in range(levels[0], levels[1]+1):
-        print("Running level", level)
+        f = open("results.csv", "a")
+        #print("Running level", level)
         score = run_level(level, duration)
-        print(score)
+        #print(score)
         f.write(
             str(level) + ", " + 
             str(duration) + ", " + 
@@ -40,10 +43,7 @@ def main(levels, duration):
             str(score['score']) + ", " + 
             str(score['ratio']) 
             + "\n")
-
-
-        
-
+        f.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run duckhunt levels')

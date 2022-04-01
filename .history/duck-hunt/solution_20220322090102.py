@@ -48,6 +48,9 @@ class DuckHunt(object):
         self.duck_choice += 1
         self.duck_choice %= self.num_ducks
         
+    
+    def hough_transforn(self, frame):
+        pass
         
     
     def sift_match(self, current_frame: np.ndarray) -> tuple:
@@ -64,6 +67,10 @@ class DuckHunt(object):
         """
         kp2, des2 = self.sift.detectAndCompute(current_frame, None)
         matches = self.brute_force_matcher.knnMatch(self.duck_descriptors[self.duck_choice], des2, k=2)
+        
+        #Create a hough transform to find the best match
+        bins = np.arange(0, 1.01, 0.01)
+        
         y,x = kp2[min(matches, key=lambda x: x[0].distance/x[1].distance)[0].trainIdx].pt
         self.update_duck_choice()
         return (x, y)
@@ -82,10 +89,10 @@ duck_hunt = DuckHunt(7)
 
 def GetLocation(move_type, env, current_frame):
     global duck_hunt
-    if np.random.uniform() < 0.5:
-        return [{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
-    else:
-        return [{'coordinate': duck_hunt.template_match(current_frame), 'move_type': 'absolute'}]
+    #if np.random.uniform() < 0.5:
+    #    return [{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
+    #else:
+    #    return [{'coordinate': duck_hunt.template_match(current_frame), 'move_type': 'absolute'}]
     
-    return[{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
+    return [{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
 
