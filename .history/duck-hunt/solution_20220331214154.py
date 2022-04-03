@@ -64,7 +64,7 @@ class DuckHunt(object):
             return (0,0)
 
         # extract location of best match
-        y,x = kp2[min(matches, key=lambda x: x[0].distance-x[1].distance)[0].trainIdx].pt
+        y,x = kp2[min(matches, key=lambda x: x[0].distance/x[1].distance)[0].trainIdx].pt
         
 
         """Uses SIFT to find the best match between the current frame and the duck image. Best match is 

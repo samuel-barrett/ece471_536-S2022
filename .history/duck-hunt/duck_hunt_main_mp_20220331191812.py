@@ -4,11 +4,13 @@ import cv2
 import numpy as np
 import pygame
 import multiprocessing as mp
+from concurrent.futures import ThreadPoolExecutor
 
 
 import ece471_duckhunt as dh 
 from ece471_duckhunt import envs
 from ece471_duckhunt.envs import duckhunt_env
+
 
 from solution import GetLocation 
 
@@ -27,7 +29,8 @@ def main(args):
   
     result = {}
     future = None
-    executor = mp.Pool(processes=4)
+    #executor = mp.Pool(processes=4)
+    executor = ThreadPoolExecutor(max_workers=1)
 
     while True:
 
@@ -57,7 +60,7 @@ def main(args):
         else:
             if future is None:
                 result = noop()
-                future = executor.apply_async(GetLocation, args=('absolute',env.action_space if args.move_type == "relative" else env.action_space_abs,current_frame, True))
+                future = executor.apply_async(GetLocation, args=('absolute',env.action_space if args.move_type == "relative" else env.action_space_abs,current_frame))
             elif future.ready():
                 result = future.get()
                 future = None
@@ -81,10 +84,10 @@ def main(args):
 
         if level_done:
             """ Indicates the level has finished. Any post-level cleanup your algorithm may need """
-            executor.close()
-            executor.join()
-            executor.terminate()
-            #pass
+            #executor.close()
+            #executor.join()
+            #executor.terminate()
+            pass
 
         if game_done:
             """ All levels have finished."""

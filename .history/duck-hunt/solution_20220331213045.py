@@ -54,19 +54,7 @@ class DuckHunt(object):
         #    return (0,0)
         #y,x = kp2[min(matches, key=lambda x: x[0].distance+x[1].distance)[0].trainIdx].pt
         #return (x, y)
-        FLANN_INDEX_KDTREE = 1
-        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
-        search_params = dict(checks=50)   # or pass empty dictionary
-        flann = cv2.FlannBasedMatcher(index_params,search_params)
-        matches = flann.knnMatch(self.duck_descriptors[self.duck_choice], des2, k=2)
         
-        if len(matches) == 0:
-            return (0,0)
-
-        # extract location of best match
-        y,x = kp2[min(matches, key=lambda x: x[0].distance-x[1].distance)[0].trainIdx].pt
-        
-
         """Uses SIFT to find the best match between the current frame and the duck image. Best match is 
         determined using a brute force matcher. The best match is the one with the lowest distance ratio between
         descriptors.
@@ -75,7 +63,6 @@ class DuckHunt(object):
             kp2 (_type_): The current frame keypoints
             des2 (_type_): The current frame descriptors
         """
-        return (x,y)
         
         
     
@@ -92,10 +79,6 @@ class DuckHunt(object):
         """
         kp2, des2 = self.sift.detectAndCompute(current_frame, None)
         match = self.matcher(kp2, des2)
-        
-        if match == (0,0):
-            return self.template_match(current_frame)
-        
         self.update_duck_choice()
         return match
     

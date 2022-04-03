@@ -62,9 +62,8 @@ class DuckHunt(object):
         
         if len(matches) == 0:
             return (0,0)
-
-        # extract location of best match
-        y,x = kp2[min(matches, key=lambda x: x[0].distance-x[1].distance)[0].trainIdx].pt
+        
+        
         
 
         """Uses SIFT to find the best match between the current frame and the duck image. Best match is 
@@ -92,10 +91,6 @@ class DuckHunt(object):
         """
         kp2, des2 = self.sift.detectAndCompute(current_frame, None)
         match = self.matcher(kp2, des2)
-        
-        if match == (0,0):
-            return self.template_match(current_frame)
-        
         self.update_duck_choice()
         return match
     

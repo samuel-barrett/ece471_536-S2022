@@ -5,6 +5,7 @@ import numpy as np
 import pygame
 import multiprocessing as mp
 
+source ∼/myvenvs/a1/bin/activate
 
 import ece471_duckhunt as dh 
 from ece471_duckhunt import envs
@@ -57,7 +58,7 @@ def main(args):
         else:
             if future is None:
                 result = noop()
-                future = executor.apply_async(GetLocation, args=('absolute',env.action_space if args.move_type == "relative" else env.action_space_abs,current_frame, True))
+                future = executor.apply_async(GetLocation, args=('absolute',env.action_space if args.move_type == "relative" else env.action_space_abs,current_frame))
             elif future.ready():
                 result = future.get()
                 future = None
@@ -81,10 +82,10 @@ def main(args):
 
         if level_done:
             """ Indicates the level has finished. Any post-level cleanup your algorithm may need """
-            executor.close()
-            executor.join()
-            executor.terminate()
-            #pass
+            #executor.close()
+            #executor.join()
+            #executor.terminate()
+            pass
 
         if game_done:
             """ All levels have finished."""

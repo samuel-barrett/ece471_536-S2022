@@ -5,6 +5,7 @@ import numpy as np
 import pygame
 import multiprocessing as mp
 
+import time
 
 import ece471_duckhunt as dh 
 from ece471_duckhunt import envs
@@ -57,7 +58,7 @@ def main(args):
         else:
             if future is None:
                 result = noop()
-                future = executor.apply_async(GetLocation, args=('absolute',env.action_space if args.move_type == "relative" else env.action_space_abs,current_frame, True))
+                future = executor.apply_async(GetLocation, args=('absolute',env.action_space if args.move_type == "relative" else env.action_space_abs,current_frame))
             elif future.ready():
                 result = future.get()
                 future = None
@@ -84,7 +85,6 @@ def main(args):
             executor.close()
             executor.join()
             executor.terminate()
-            #pass
 
         if game_done:
             """ All levels have finished."""

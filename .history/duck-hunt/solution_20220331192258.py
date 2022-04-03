@@ -1,6 +1,5 @@
 import cv2
 import os
-from cv2 import IMREAD_GRAYSCALE
 import numpy as np
 
 class DuckHunt(object):
@@ -15,7 +14,6 @@ class DuckHunt(object):
         """
         self.num_ducks = num_ducks
         self.ducks = self.get_ducks()
-        print("was here")
         self.sift = cv2.SIFT_create()
         self.duck_descriptors = []
         self.duck_keypoints = []
@@ -35,7 +33,7 @@ class DuckHunt(object):
         ducks = []
         for duck_num in range(1, self.num_ducks+1):
             duck_path = os.path.dirname(__file__) + "/match_images/duck" + str(duck_num) + ".jpg"
-            duck = cv2.imread(duck_path, cv2.IMREAD_GRAYSCALE)
+            duck = cv2.imread(duck_path)
             if duck is None:
                 raise ValueError("Error: duck image not found: {}".format(duck_path))
             ducks.append(duck)
@@ -48,39 +46,11 @@ class DuckHunt(object):
         self.duck_choice += 1
         self.duck_choice %= self.num_ducks
         
-    def matcher(self, kp2, des2):
-        #matches = self.brute_force_matcher.knnMatch(self.duck_descriptors[self.duck_choice], des2, k=2)
-        #if len(matches) == 0:
-        #    return (0,0)
-        #y,x = kp2[min(matches, key=lambda x: x[0].distance+x[1].distance)[0].trainIdx].pt
-        #return (x, y)
-        FLANN_INDEX_KDTREE = 1
-        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
-        search_params = dict(checks=50)   # or pass empty dictionary
-        flann = cv2.FlannBasedMatcher(index_params,search_params)
-        matches = flann.knnMatch(self.duck_descriptors[self.duck_choice], des2, k=2)
-        
-        if len(matches) == 0:
-            return (0,0)
-
-        # extract location of best match
-        y,x = kp2[min(matches, key=lambda x: x[0].distance-x[1].distance)[0].trainIdx].pt
-        
-
-        """Uses SIFT to find the best match between the current frame and the duck image. Best match is 
-        determined using a brute force matcher. The best match is the one with the lowest distance ratio between
-        descriptors.
-
-        Args:
-            kp2 (_type_): The current frame keypoints
-            des2 (_type_): The current frame descriptors
-        """
-        return (x,y)
-        
         
     
     def sift_match(self, current_frame: np.ndarray) -> tuple:
-        """Uses SIFT to find the best match between the current frame and the duck image. Best match is 
+        """_summary_
+        Uses SIFT to find the best match between the current frame and the duck image. Best match is 
         determined using a brute force matcher. The best match is the one with the lowest distance ratio between
         descriptors.
 
@@ -90,17 +60,18 @@ class DuckHunt(object):
         Returns:
             (x,y): tuple of x and y coordinates of the best match in the current frame
         """
+        print("Running sift")
         kp2, des2 = self.sift.detectAndCompute(current_frame, None)
-        match = self.matcher(kp2, des2)
-        
-        if match == (0,0):
-            return self.template_match(current_frame)
-        
+        print("a")
+        matches = self.brute_force_matcher.knnMatch(self.duck_descriptors[self.duck_choice], des2, k=2)
+        print("b")
+        y,x = kp2[min(matches, key=lambda x: x[0].distance/x[1].distance)[0].trainIdx].pt
+        print("c")
         self.update_duck_choice()
-        return match
+        print("d")
+        return (x, y)
     
     def template_match(self, current_frame: np.ndarray) ->  tuple:
-        current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
         duck = self.ducks[self.duck_choice]
         match = cv2.matchTemplate(current_frame, duck, cv2.TM_CCOEFF_NORMED)
         #Get location of best match (highest value)
@@ -112,15 +83,13 @@ class DuckHunt(object):
 
 duck_hunt = DuckHunt(7)
 
-def GetLocation(move_type, env, current_frame, using_multiprocessor=False):
+def GetLocation(move_type, env, current_frame):
     global duck_hunt
-    
-    #Sift is not working on the multiprocessor version of the game.
-    #I am not sure why, but it is working fine on the multithreaded version
-    #I have set it to use template matching so that it at least does something.
-    if using_multiprocessor:
-        print("Using multiprocessor")
-        return [{'coordinate': duck_hunt.template_match(current_frame), 'move_type': 'absolute'}]
-    else:
-        return[{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
+    #if np.random.uniform() < 0.5:
+    #    return [{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
+    #else:
+    #    return [{'coordinate': duck_hunt.template_match(current_frame), 'move_type': 'absolute'}]
+    if env
+    #return [{'coordinate': duck_hunt.template_match(current_frame), 'move_type': 'absolute'}]
+    return[{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
 
