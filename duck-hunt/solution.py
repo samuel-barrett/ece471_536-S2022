@@ -49,24 +49,6 @@ class DuckHunt(object):
         self.duck_choice %= self.num_ducks
         
     def matcher(self, kp2, des2):
-        #matches = self.brute_force_matcher.knnMatch(self.duck_descriptors[self.duck_choice], des2, k=2)
-        #if len(matches) == 0:
-        #    return (0,0)
-        #y,x = kp2[min(matches, key=lambda x: x[0].distance+x[1].distance)[0].trainIdx].pt
-        #return (x, y)
-        FLANN_INDEX_KDTREE = 1
-        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
-        search_params = dict(checks=50)   # or pass empty dictionary
-        flann = cv2.FlannBasedMatcher(index_params,search_params)
-        matches = flann.knnMatch(self.duck_descriptors[self.duck_choice], des2, k=2)
-        
-        if len(matches) == 0:
-            return (0,0)
-
-        # extract location of best match
-        y,x = kp2[min(matches, key=lambda x: x[0].distance-x[1].distance)[0].trainIdx].pt
-        
-
         """Uses SIFT to find the best match between the current frame and the duck image. Best match is 
         determined using a brute force matcher. The best match is the one with the lowest distance ratio between
         descriptors.
@@ -75,8 +57,13 @@ class DuckHunt(object):
             kp2 (_type_): The current frame keypoints
             des2 (_type_): The current frame descriptors
         """
-        return (x,y)
+        matches = self.brute_force_matcher.knnMatch(self.duck_descriptors[self.duck_choice], des2, k=2)
         
+        if len(matches) == 0:
+            return (0,0)
+        y,x = kp2[min(matches, key=lambda x: x[0].distance/x[1].distance)[0].trainIdx].pt
+        #y,x = kp2[matches[np.random.randint(0, len(matches))][0].trainIdx].pt
+        return (x, y)
         
     
     def sift_match(self, current_frame: np.ndarray) -> tuple:
@@ -109,6 +96,14 @@ class DuckHunt(object):
         x = max_loc[1] + int(duck.shape[1]/2)
         self.update_duck_choice()
         return (x,y)
+    
+    def yolo_train(self):
+        """
+        Train the YOLO model
+        """
+        pass 
+
+        
 
 duck_hunt = DuckHunt(7)
 
