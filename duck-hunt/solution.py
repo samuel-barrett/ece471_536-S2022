@@ -62,14 +62,12 @@ class DuckHunt(object):
         if len(matches) == 0:
             return (0,0)
         y,x = kp2[min(matches, key=lambda x: x[0].distance/x[1].distance)[0].trainIdx].pt
-        #y,x = kp2[matches[np.random.randint(0, len(matches))][0].trainIdx].pt
         return (x, y)
         
     
     def sift_match(self, current_frame: np.ndarray) -> tuple:
         """Uses SIFT to find the best match between the current frame and the duck image. Best match is 
-        determined using a brute force matcher. The best match is the one with the lowest distance ratio between
-        descriptors.
+        determined using a brute force matcher.
 
         Args:
             current_frame (np.ndarray): current frame to be matched to duck image
@@ -78,13 +76,16 @@ class DuckHunt(object):
             (x,y): tuple of x and y coordinates of the best match in the current frame
         """
         kp2, des2 = self.sift.detectAndCompute(current_frame, None)
-        match = self.matcher(kp2, des2)
+        matches = self.brute_force_matcher.knnMatch(self.duck_descriptors[self.duck_choice], des2, k=2)
         
-        if match == (0,0):
-            return self.template_match(current_frame)
+        if len(matches) == 0:
+            return (0,0)
+        
+        y,x = kp2[min(matches, key=lambda x: x[0].distance/x[1].distance)[0].trainIdx].pt
+    
         
         self.update_duck_choice()
-        return match
+        return (x, y)
     
     def template_match(self, current_frame: np.ndarray) ->  tuple:
         current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
@@ -96,26 +97,12 @@ class DuckHunt(object):
         x = max_loc[1] + int(duck.shape[1]/2)
         self.update_duck_choice()
         return (x,y)
-    
-    def yolo_train(self):
-        """
-        Train the YOLO model
-        """
-        pass 
 
         
+num_ducks = 7
+duck_hunt = DuckHunt(num_ducks)
 
-duck_hunt = DuckHunt(7)
-
-def GetLocation(move_type, env, current_frame, using_multiprocessor=False):
+def GetLocation(move_type, env, current_frame):
     global duck_hunt
-    
-    #Sift is not working on the multiprocessor version of the game.
-    #I am not sure why, but it is working fine on the multithreaded version
-    #I have set it to use template matching so that it at least does something.
-    if using_multiprocessor:
-        print("Using multiprocessor")
-        return [{'coordinate': duck_hunt.template_match(current_frame), 'move_type': 'absolute'}]
-    else:
-        return[{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
+    return[{'coordinate': duck_hunt.sift_match(current_frame), 'move_type': 'absolute'}]
 
