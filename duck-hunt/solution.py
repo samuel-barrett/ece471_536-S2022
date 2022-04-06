@@ -47,22 +47,6 @@ class DuckHunt(object):
         self.duck_choice += 1
         self.duck_choice %= self.num_ducks
         
-    def matcher(self, kp2, des2):
-        """Uses SIFT to find the best match between the current frame and the duck image. Best match is 
-        determined using a brute force matcher. The best match is the one with the lowest distance ratio between
-        descriptors.
-
-        Args:
-            kp2 (_type_): The current frame keypoints
-            des2 (_type_): The current frame descriptors
-        """
-        matches = self.brute_force_matcher.knnMatch(self.duck_descriptors[self.duck_choice], des2, k=2)
-        
-        if len(matches) == 0:
-            return (0,0)
-        y,x = kp2[min(matches, key=lambda x: x[0].distance/x[1].distance)[0].trainIdx].pt
-        return (x, y)
-        
     
     def sift_match(self, current_frame: np.ndarray) -> tuple:
         """Uses SIFT to find the best match between the current frame and the duck image. Best match is 
