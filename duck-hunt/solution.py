@@ -1,6 +1,5 @@
 import cv2
 import os
-from cv2 import IMREAD_GRAYSCALE
 import numpy as np
 
 class DuckHunt(object):
